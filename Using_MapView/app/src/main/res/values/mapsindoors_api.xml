@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- MapsPeople demo API Key -->
+	<string name="mapsindoors_api_key" translatable="false">57e4e4992e74800ef8b69718</string>
+</resources>
