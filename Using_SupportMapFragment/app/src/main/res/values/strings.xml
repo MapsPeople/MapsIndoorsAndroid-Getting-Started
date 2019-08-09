@@ -1,0 +1,4 @@
+<resources>
+	<string name="app_name" translatable="false">Getting Started</string>
+	<string name="title_activity_maps">Getting Started</string>
+</resources>
