@@ -1,4 +1,4 @@
-# MapsIndoorsAndroid-Getting-Started
+# Getting Started
 
 A very basic project showing how to initialize our library and render a solution on the map
 
