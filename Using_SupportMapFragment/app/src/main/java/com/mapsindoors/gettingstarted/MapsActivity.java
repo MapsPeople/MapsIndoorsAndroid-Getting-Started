@@ -114,8 +114,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /**
      * Sets up MapControl
-     *
-     * @param googleMap The google map object.
      */
     void setupMapControl()
     {
