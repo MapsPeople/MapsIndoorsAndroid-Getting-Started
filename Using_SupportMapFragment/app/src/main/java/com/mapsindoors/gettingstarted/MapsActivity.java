@@ -8,13 +8,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.mapsindoors.mapssdk.IFloorSelector;
 import com.mapsindoors.mapssdk.MPLocation;
 import com.mapsindoors.mapssdk.MPLocationSourceStatus;
 import com.mapsindoors.mapssdk.MapControl;
 import com.mapsindoors.mapssdk.MapsIndoors;
 import com.mapsindoors.mapssdk.dbglog;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
@@ -30,7 +31,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     static final LatLng MAPSPEOPLE_HQ_LOCATION = new LatLng( 57.0579639,9.9504609 );
 
     // Initial zoom level we'll use to set the camera before we setup MapControl
-    static final float MAPSPEOPLE_HQ_INITIAL_ZOOM_LEVEL = 14f;
+    static final float MAPSPEOPLE_HQ_INITIAL_ZOOM_LEVEL = 14.0f;
 
     // Close enough zoom level to see most of our HQ office
     static final float MAPSPEOPLE_HQ_CLOSE_UP_ZOOM_LEVEL = 20.5f;
@@ -46,19 +47,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     static final int MAPSPEOPLE_HQ_FLOOR_INDEX = 1;
 
 
-    private SupportMapFragment mapFragment;
+    SupportMapFragment mapFragment;
 
     // The Google Maps instance
-    private GoogleMap gMap;
+    GoogleMap gMap;
 
     // MapControl: in a nutshell, it takes care of the visual part of the MapsIndoors SDK such as
     // map marker icons, map interactivity, etc.
     MapControl mapControl;
 
+    // Avoid animating the camera more than once at start
+    boolean iVeBeenHereAlready;
+
 
 
     @Override
-    protected void onCreate( Bundle savedInstanceState )
+    protected void onCreate( @Nullable Bundle savedInstanceState )
     {
         super.onCreate( savedInstanceState );
 
@@ -97,7 +101,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady( GoogleMap googleMap )
+    public void onMapReady( @NonNull GoogleMap googleMap )
     {
         gMap = googleMap;
 
@@ -158,6 +162,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             return true;
         });
 
+        // Disable icon clustering
+        // This is set from our CMS. It will group overlapping marker icons based on their type
+        mapControl.setLocationClusteringEnabled( false );
+
+        // Disable icon overlap default resolution
+        // The default behaviour is to, if two marker icons overlap (collide) one will set to
+        // hide
+        mapControl.setLocationHideOnIconOverlapEnabled( false );
+
+        iVeBeenHereAlready = false;
+
         // =======================================================================================
         //
         // [ OPTIONAL ] Listens for Locations data availability
@@ -196,7 +211,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             else
             {
                 // Prints out the given error object
-                if( dbglog.isDebugMode() ) {
+                if( dbglog.isDeveloperMode() ) {
 
                     // ---------------------------------------------------------------------------
                     // The MIError error object holds several useful values:
@@ -216,43 +231,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /**
      * Invoked once MapControl.init() has finished
+     *
+     * All data but Locations is available here
      */
     void onMapControlInitIsReady()
     {
-        // #######################################################################################
-        //
-        //    IMPORTANT: Set the first floor you want to start with
-        //
-        //  NO INDOOR TILES (FLOOR PLANS) WILL BE SHOWN UNLESS YOU CALL THIS METHOD WITH A VALID
-        //  FLOOR INDEX
-        //
-        //  The floor selector/picker is shown when the camera gets close to the building, at
-        //  around zoom level 18 (as of SDK version 3.1.3-beta-4)
-        //
-        // #######################################################################################
-        mapControl.selectFloor( MAPSPEOPLE_HQ_FLOOR_INDEX );
-
-        // =======================================================================================
-        //
-        // This is a workaround for a current issue in the default floor selector. Without it,
-        // the floor selector will only show up once we pan away from our building and back...
-        //
-        // This issue is still present in the current SDK version (3.1.3-beta-4)
-        //
-        final IFloorSelector floorSelector = mapControl.getFloorSelector();
-        if( floorSelector != null ) {
-            // Hide without animating
-            floorSelector.show( false, false );
-            // ...and show without animating
-            floorSelector.show( true, false );
-        }
-        // =======================================================================================
-
-        // Animate the camera to our HQ office
-        gMap.animateCamera( CameraUpdateFactory.newLatLngZoom(
-                MAPSPEOPLE_HQ_LOCATION,
-                MAPSPEOPLE_HQ_CLOSE_UP_ZOOM_LEVEL
-        ));
     }
 
     /**
@@ -260,6 +243,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
      */
     void mapsIndoorsOnLocationsAvailable()
     {
+        if( !iVeBeenHereAlready ) {
+            iVeBeenHereAlready = true;
+
+            runOnUiThread( () -> {
+                // #######################################################################################
+                //
+                //    IMPORTANT: Set the first floor you want to start with
+                //
+                //  NO INDOOR TILES (FLOOR PLANS) WILL BE SHOWN UNLESS YOU CALL THIS METHOD WITH A VALID
+                //  FLOOR INDEX
+                //
+                //  The floor selector/picker is shown when the camera gets close to the building, at
+                //  around zoom level 18 (as of SDK version 3.1.3-beta-4)
+                //
+                // #######################################################################################
+                mapControl.selectFloor( MAPSPEOPLE_HQ_FLOOR_INDEX );
+
+                // Animate the camera to our HQ office
+                gMap.animateCamera( CameraUpdateFactory.newLatLngZoom(
+                        MAPSPEOPLE_HQ_LOCATION,
+                        MAPSPEOPLE_HQ_CLOSE_UP_ZOOM_LEVEL
+                ));
+            } );
+        }
+
 /*
         // ---------------------------------------------------------------------------------------
         //

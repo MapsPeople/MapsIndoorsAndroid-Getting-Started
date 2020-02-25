@@ -28,8 +28,7 @@ public class Application extends android.app.Application
         // validate input parameters, etc. etc.
         //
         if( BuildConfig.DEBUG ) {
-            dbglog.useDebug( BuildConfig.DEBUG );
-            dbglog.setCustomTagPrefix( "MIGettingStarted_" );
+            dbglog.enableDeveloperMode( BuildConfig.DEBUG, "MIGettingStarted_" );
         }
 
         // =======================================================================================
@@ -87,7 +86,7 @@ public class Application extends android.app.Application
             else
             {
                 // Prints out the given error object
-                if( dbglog.isDebugMode() ) {
+                if( dbglog.isDeveloperMode() ) {
 
                     // ---------------------------------------------------------------------------
                     // The MIError error object holds several useful values:
