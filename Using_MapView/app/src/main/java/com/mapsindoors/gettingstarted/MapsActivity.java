@@ -47,7 +47,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // - To get a Building's list of floors: myBuilding.getFloors()
     // - To get a Floor's name:              myFloor.getDisplayName()
     // - To get a Floor's index:             myFloor.getZIndex()
-    static final int MAPSPEOPLE_HQ_FLOOR_INDEX = 1;
+    static final int MAPSPEOPLE_HQ_FLOOR_INDEX = 10;
 
 
     Bundle  mapViewBundle;
